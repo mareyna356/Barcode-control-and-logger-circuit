@@ -39,11 +39,37 @@ A 12V power source (to power the relay); my power source was an array of three 3
 A 5V power source (to power the LED); my power source was a USB cable connected to my computer.  
 <img src=https://github.com/mareyna356/Barcode-control-and-logger-circuit/assets/116867368/78b63a03-466f-4f73-a68a-aaf64d5b6cba width="300">
 
-A 300Ω resistor for the LED. The LED takes in a maximum of 20mA and will be fed with 5V, so the minimum resistance the LED needs is $R=V/I=5V/20mA=250Ω$; the resistor with the closest value to 250Ω that I could find was a 300Ω one.
+A 300Ω resistor for the LED. The red LED, according to its [datasheet](https://www.farnell.com/datasheets/1498852.pdf), has a max continuous forward current ($I$) of 20mA and has a forward voltage ($V_f$) of 2V. Since the LED will be fed with a 5V power source ($V_s$), the minimum resistance the LED needs is $R=(V_s-V_f)/I=(5V-2V)/20mA=150Ω$; the resistor with the closest value to 150Ω that I could find was a 300Ω one, which results in a current of $I=V/R=3V/300Ω=10mA$.
 
-A 1kΩ and 2.2kΩ resistor to form a voltage divider for the ESP-01S. The ESP-01S takes in 3.3V through its RX pin for serial communication, but the Arduino Mega's TX pins are 5V pins. Thus, a voltage divider is needed to reduce the Arduino's 5V to 3.3V suitable for the ESP. To start my calculations, I first proposed a 1kΩ resistor as $R_1$, so to find $R_2$: $R_2=(V_oR_1)/(V_{in}-Vo)=(3.3V\times1kΩ)/(5V-3.3V)=1941.18Ω$. The closest value of resistor I could find was 2.2kΩ, which results in an output of $V_o=(R_2V_{in})/(R_1+R_2)=(2.2kΩ\times5V)/(1kΩ+2.2kΩ)=3.44V$, which is close enough to 3.3V.
+A 1kΩ and 2.2kΩ resistor to form a voltage divider for the ESP-01S. The ESP-01S takes in 3.3V through its RX pin for serial communication, but the Arduino Mega's TX pins are 5V pins. Thus, a voltage divider is needed to reduce the Arduino's 5V to 3.3V suitable for the ESP. To start my calculations, I first proposed a 1kΩ resistor as $R_1$, so to find $R_2$: $R_2=(V_oR_1)/(V_{in}-Vo)=(3.3V\times1kΩ)/(5V-3.3V)=1941.18Ω$. The closest value of resistor I could find was 2.2kΩ, which results in an output of $V_o=(R_2V_{in})/(R_1+R_2)=(2.2kΩ\times5V)/(1kΩ+2.2kΩ)=3.44V$, which is reasonably close to 3.3V.
 
-A 1kΩ resistor for the transistor's base. Since the relay, which is connected to the transistor's collector, requires a current of 30mA ($I_C$), and a 2N2222 transistor has a max $\beta$ of 300 (according to its [datasheet](https://www.farnell.com/datasheets/296640.pdf)), then to put the transistor into saturation (and thus allow the 12V source to feed the relay) I'd need in the transistor's base a minimum current of $I_B=I_C/\beta=30mA/300=100μA$. Since the Arduino Mega's digital ports output 5V, and the base-emitter voltage of a 2N2222 is 0.7V (according to the datasheet again), then in the base of the transistor I'd need a resistor of at most 
+A 1kΩ resistor for the transistor's base. Since the relay, which is connected to the transistor's collector, requires a current of 30mA ($I_C$), and a 2N2222 transistor has a max $\beta$ of 300 (according to its [datasheet](https://www.farnell.com/datasheets/296640.pdf)), then to put the transistor into saturation (and thus allow the 12V source to feed the relay) I'd need in the transistor's base a minimum current of $I_B=I_C/\beta=30mA/300=100μA$. Since the Arduino Mega's digital ports output 5V ($V_{in}$), and the minimum base-emitter saturation voltage ($V_{BE}$) of a 2N2222 is 0.6V (according to the datasheet again), then in the base of the transistor I'd need a resistor of at most $R=(V_{in}-V_{BE})/I_B=(5V-0.6V)/100μA=44kΩ$. For simplicity and to assure saturation, I decided to use a 1kΩ resistor, which results in a base current of $I_C=V/R=5V/1kΩ=5mA$, much higher than the required 100μA and still appropriate for the 2N2222, which lists in its datasheet base currents of up to 50mA.
 
-A breadboard on which to build the system  
+Finally, a breadboard on which to build the system.
 
+Additionally, I also use my chip-less Arduino Uno to flash code into the ESP-01s. I use the following circuit in order to do that (note that this circuit also utilizes the voltage divider, since the Arduino Uno's digital ports are also 5V):  
+![ESP circuit](circuits/ESP_circuit.png)
+
+I also used a cardboard box to create a makeshift "card holder" in which to insert my ID so it's read by the scanner:  
+![Box](https://github.com/mareyna356/Barcode-control-and-logger-circuit/assets/116867368/970d27ec-2dbc-4fe0-8b31-e07c822681dc)
+
+## Software
+First it's necessary to install [Uniform Server](https://www.uniformserver.com/), which I used to host the MySQL database and a webpage with Apache. I used phpMyAdmin to create a new MySQL database called **log_mesas** ("mesas" means "tables" in Spanish) and a new table in it called **sjm2** (which stands for "<ins>s</ins>alón <ins>J</ins>, <ins>m</ins>esa <ins>2</ins>", which is Spanish for "room J, table 2", a reference to a room and table in the computer lab). The **sjm2** table is created with the following fields:  
+![Creating table](https://github.com/mareyna356/Barcode-control-and-logger-circuit/assets/116867368/72de8e2f-e951-4f40-99e5-90ad0e27fb15)
+
+- An "id" field of type INT that acts as the primary key with auto increment.
+- A "matricula" (student number) field of type INT.
+- An "entrada" (entrance) field of type DATETIME and a default value of CURRENT_TIMESTAMP to save the date and time of the student's arrival.
+- A "salida" (exit) field of type DATETIME, a NULL default value and a "on update CURRENT_TIMESTAMP" attribute to save the date and time of the student's departure. This is the only field allowed to be NULL.
+
+Next up, it's necessary to configure Apache to allow access to its webpage from other devices in the network so the ESP-01s can send data to it. I did it by modifying the file "www/.htaccess" in Uniform Server's folder; you can allow all external connections, or allow just a range of IPs (which of course has to include the ESP's IP). Once this is configured, in Apache's "www" folder you have to insert two php files: [activa.php](www/activa.php) and [desactiva.php](www/desactiva.php).
+
+
+## Barcode scanner configuration
+The Waveshare Barcode Scanner can be configured by using it to scan different QR codes provided by the scanner's [user manual](https://files.waveshare.com/upload/d/dd/Barcode_Scanner_Module_Setting_Manual_EN.pdf). The settings I used for this project are:
+- **Enable UART&All-Code** (to allow the scanner to send its readings to the Arduino through the serial ports)
+- **115200bps** (to set the scanner at the same serial speed as the Arduino)
+- **Continuous Mode** (to set the scanner in continuous scanning mode so you don't need to press the scanner's button to scan)
+- **No Interval** (so the scanner doesn't wait any time between scans)
+- **Enable silence** (so the scanner doesn't beep everytime it scans something)
+- **Add Tail CRLF** (so that each reading of the scanner is separated from the previous reading by a Carriage Return and a Line Feed)
