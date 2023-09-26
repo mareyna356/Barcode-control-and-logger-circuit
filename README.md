@@ -68,7 +68,7 @@ Next up, it's necessary to configure Apache to allow access to its webpage from 
 
 Both of these files have to be modified with the correct MySQL username and password, if you don't want to or can't use the default root credentials.
 
-Finally, upload [ESP.ino](ESP.ino) into the ESP-01S and upload [Arduino.ino](Arduino.ino) into the Arduino Mega.
+Finally, modify [ESP.ino](ESP.ino) with your Wi-Fi's credentials as well as the IP of your computer hosting the Apache page and the MySQL database, and upload the code into the ESP-01S. Also modify [Arduino.ino](Arduino.ino) with the IP of the same host computer and upload the code into the Arduino Mega.
 
 ## Barcode scanner configuration
 The Waveshare Barcode Scanner can be configured by using it to scan different QR codes provided by the scanner's [user manual](https://files.waveshare.com/upload/d/dd/Barcode_Scanner_Module_Setting_Manual_EN.pdf). The configuration required for this project is:
