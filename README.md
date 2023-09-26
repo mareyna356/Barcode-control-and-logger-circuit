@@ -6,9 +6,9 @@ The idea for the system came from my professor of that course, who kept getting 
 ## Objective
 This project is a smaller prototype of that system, where the load circuit, instead of being an AC circuit that consists of the lab equipment, is a much smaller DC circuit that only contains a small red LED. The objective of this prototype is to energize the LED when a student ID is inserted into the barcode reader (as well as log into a MySQL database the ID number and the date and time of "arrival") and to deenergize the LED when the ID is removed (as well as log into the database the date and time of "departure").
 
-## Circuit schematic
+## Circuit diagram
 
-![Circuit schematic]()
+![Circuit diagram](circuits/Main_circuit.png)
 
 ## Components and tools
 A Waveshare Barcode Scanner Module.  
