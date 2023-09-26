@@ -47,7 +47,7 @@ A 1kΩ resistor for the transistor's base. Since the relay, which is connected t
 
 Finally, a breadboard on which to build the system.
 
-Additionally, I also use my chip-less Arduino Uno to flash code into the ESP-01s. I use the following circuit in order to do that (note that this circuit also utilizes the voltage divider, since the Arduino Uno's digital ports are also 5V):  
+Additionally, I also use my chip-less Arduino Uno to flash the code into the ESP-01s. I used the following circuit in order to do that (note that this circuit also utilizes the voltage divider, since the Arduino Uno's digital ports are also 5V):  
 ![ESP circuit](circuits/ESP_circuit.png)
 
 I also used a cardboard box to create a makeshift "card holder" in which to insert my ID so it's read by the scanner:  
@@ -62,14 +62,22 @@ First it's necessary to install [Uniform Server](https://www.uniformserver.com/)
 - An "entrada" (entrance) field of type DATETIME and a default value of CURRENT_TIMESTAMP to save the date and time of the student's arrival.
 - A "salida" (exit) field of type DATETIME, a NULL default value and a "on update CURRENT_TIMESTAMP" attribute to save the date and time of the student's departure. This is the only field allowed to be NULL.
 
-Next up, it's necessary to configure Apache to allow access to its webpage from other devices in the network so the ESP-01s can send data to it. I did it by modifying the file "www/.htaccess" in Uniform Server's folder; you can allow all external connections, or allow just a range of IPs (which of course has to include the ESP's IP). Once this is configured, in Apache's "www" folder you have to insert two php files: [activa.php](www/activa.php) and [desactiva.php](www/desactiva.php).
+Next up, it's necessary to configure Apache to allow access to its webpage from other devices in the network so the ESP-01s can send data to it. I did it by modifying the file "www/.htaccess" in Uniform Server's folder; you can allow all external connections, or allow just a range of IPs (which of course has to include the ESP's IP). It's also possible that your Firewall ends up blocking the access from other IPs, so you might have to configure IP exceptions into the Firewall too. Once this is configured, in Apache's "www" folder you have to insert two php files:
+- [activa.php](www/activa.php), which takes the "matricula" (student number) sent by the ESP in a POST request and saves it in the MySQL database alongside the date and time of arrival.
+- [desactiva.php](www/desactiva.php), which updates into the MySQL server the date and time of departure.
 
+Both of these files have to be modified with the correct MySQL username and password, if you don't want to or can't use the default root credentials.
+
+Finally, upload [ESP.ino](ESP.ino) into the ESP-01S and upload [Arduino.ino](Arduino.ino) into the Arduino Mega.
 
 ## Barcode scanner configuration
-The Waveshare Barcode Scanner can be configured by using it to scan different QR codes provided by the scanner's [user manual](https://files.waveshare.com/upload/d/dd/Barcode_Scanner_Module_Setting_Manual_EN.pdf). The settings I used for this project are:
+The Waveshare Barcode Scanner can be configured by using it to scan different QR codes provided by the scanner's [user manual](https://files.waveshare.com/upload/d/dd/Barcode_Scanner_Module_Setting_Manual_EN.pdf). The configuration required for this project is:
 - **Enable UART&All-Code** (to allow the scanner to send its readings to the Arduino through the serial ports)
 - **115200bps** (to set the scanner at the same serial speed as the Arduino)
 - **Continuous Mode** (to set the scanner in continuous scanning mode so you don't need to press the scanner's button to scan)
 - **No Interval** (so the scanner doesn't wait any time between scans)
 - **Enable silence** (so the scanner doesn't beep everytime it scans something)
 - **Add Tail CRLF** (so that each reading of the scanner is separated from the previous reading by a Carriage Return and a Line Feed)
+
+## Result
+A video of the system in action: https://drive.google.com/file/d/1mDKOGagtiVmFatDjXft3mKnqPdKazZzm/view?usp=sharing
