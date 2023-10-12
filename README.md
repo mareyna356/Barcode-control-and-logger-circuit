@@ -9,7 +9,7 @@ This project is a smaller prototype of that system, where the load circuit, inst
 ## Circuit diagram
 
 ![Circuit diagram](circuits/Main_circuit.png)  
-_Diagram made with NI Multisim__
+_Diagram made with NI Multisim_
 
 ## Components and tools
 A Waveshare Barcode Scanner Module.  
